@@ -19,7 +19,7 @@ then
 fi
 set -e
 
-if [ ! -f /usr/vpnserver/vpn_server.config ]; then
+if [ ! -f /softether/vpn_server.config ]; then
 
 : ${PSK:='notasecret'}
 
@@ -173,6 +173,10 @@ while [[ $(pidof vpnserver) ]] > /dev/null; do sleep 1; done
 set -e
 
 echo \# [initial setup OK]
+
+# set vpn config to /softether, so it can be mapped to host volume
+mv /usr/vpnserver/vpn_server.config /softether/vpn_server.config
+ln -sf /softether/vpn_server.config /usr/vpnserver/vpn_server.config
 
 fi
 
