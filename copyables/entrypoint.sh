@@ -48,10 +48,12 @@ printf '=%.0s' {1..24}
 echo
 
 vpncmd_server () {
+  echo "Set server: $@"
   /usr/bin/vpncmd localhost /SERVER /CSV /CMD "$@"
 }
 
 vpncmd_hub () {
+  echo "Set hub: $@"
   /usr/bin/vpncmd localhost /SERVER /CSV /HUB:DEFAULT /CMD "$@"
 }
 
@@ -70,16 +72,6 @@ done
 # About command to grab version number
 # /usr/bin/vpncmd localhost /SERVER /CSV /CMD About | head -2 | tail -1 | sed 's/^/# /;'
 vpncmd_server About | head -2 | tail -1 | sed 's/^/# /;'
-
-# enable L2TP_IPsec
-vpncmd_server IPsecEnable /L2TP:yes /L2TPRAW:yes /ETHERIP:no /PSK:${PSK} /DEFAULTHUB:DEFAULT
-
-# enable SecureNAT
-vpncmd_hub SecureNatEnable
-
-# set MTU
-: ${MTU:='1500'}
-vpncmd_hub NatSet /MTU:$MTU /LOG:no /TCPTIMEOUT:3600 /UDPTIMEOUT:1800
 
 # enable OpenVPN
 vpncmd_server OpenVpnEnable yes /PORTS:1194
@@ -149,15 +141,19 @@ export PASSWORD='**'
 # handle VPNCMD_* commands right before setting admin passwords
 if [[ $VPNCMD_SERVER ]]
 then
-  while IFS=";" read -ra CMD; do
-    vpncmd_server $CMD
+  while IFS=';' read -ra ADDR; do
+    for i in "${ADDR[@]}"; do
+      vpncmd_server $i
+    done
   done <<< "$VPNCMD_SERVER"
 fi
 
 if [[ $VPNCMD_HUB ]]
 then
-  while IFS=";" read -ra CMD; do
-    vpncmd_hub $CMD
+  while IFS=';' read -ra ADDR; do
+    for i in "${ADDR[@]}"; do
+      vpncmd_hub $i
+    done
   done <<< "$VPNCMD_HUB"
 fi
 
